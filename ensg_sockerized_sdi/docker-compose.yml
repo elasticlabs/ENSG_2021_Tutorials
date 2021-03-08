@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    build: ./nginx-proxy
+    container_name: changeme
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - revproxy_admin
+      - revproxy_apps
+
+  portainer:
+    image: portainer/portainer-ce:2.0.1-alpine
+    container_name: changeme
+    restart: always
+    expose:
+      - "9000"
+    environment:
+      - VIRTUAL_HOST=changeme
+      - VIRTUAL_PORT=9000
+    networks:
+      - revproxy_admin
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer/data:/data
+    networks:
+      - revproxy_admin
+
+volumes:
+  vhost.d:
+  html:
+
+networks:
+  revproxy_admin:
+    external:
+      name: revproxy_admin
+  revproxy_apps:
+    external: 
+      name: revproxy_apps
