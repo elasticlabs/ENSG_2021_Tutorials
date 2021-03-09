@@ -1,0 +1,42 @@
+{
+  "options": {
+    "paths": {
+      "root": "/usr/src/app/node_modules/tileserver-gl-styles",
+      "fonts": "fonts",
+      "styles": "styles",
+      "mbtiles": "/data"
+    },
+    "serveStaticMaps": true,
+    "formatQuality": {
+      "jpeg": 90,
+      "webp": 90
+    },
+    "maxSize": 8192,
+    "pbfAlias": "pbf"
+  },
+  "styles": {
+    "osm-bright": {
+      "style": "/dta/styles/osm-bright/style.json",
+      "tilejson": {
+        "bounds": [-4.9508830, 31.2100000, 29.9753085, 44.4128887]
+      }
+    },
+    "dark-matter": {
+      "style": "/data/styles/dark-matter/style.json",
+      "tilejson": {
+        "bounds": [-4.9508830, 31.2100000, 29.9753085, 44.4128887]
+      }
+    },
+    "positron": {
+      "style": "/data/styles/positron/style.json",
+      "tilejson": {
+        "bounds": [-4.9508830, 31.2100000, 29.9753085, 44.4128887]
+      }
+    }
+  },
+  "data": {
+    "v3": {
+      "mbtiles": "tiles.mbtiles"
+    }
+  }
+}
