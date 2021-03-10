@@ -33,7 +33,7 @@ help:
 .PHONY: proxy-up
 proxy-up:
 	chmod 755 nginx-proxy/*.conf
-	docker-compose -f docker-compose.proxy.yml up -d --build --remove-orphans portainer 
+	docker-compose -f docker-compose.yml up -d --build --remove-orphans portainer 
 
 .PHONY: up
 up: pull build proxy-up
