@@ -6,10 +6,10 @@ ENV \
     GEOSERVER_VERSION=2.18.0 \
     GEOSERVER_DATA_DIR=/var/local/geoserver \
     GEOSERVER_ADMIN_USER=admin \
-    GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver \
+    GEOSERVER_ADMIN_PASSWORD=geoserver \
     # https://docs.geoserver.org/stable/en/user/production/container.html#optimize-your-jvm
-    INITIAL_MEMORY=1G \
-    MAXIMUM_MEMORY=2G
+    INITIAL_MEMORY=512M \
+    MAXIMUM_MEMORY=1G
 
 # -> GDAL Native libes
 # Ativate if specific files support is needed

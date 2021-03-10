@@ -2,15 +2,14 @@
 Docker based composition of a geospatial data infrastructure solution including OGC services harvesting capabilities
 
 #### Available endpoints
-* `tiles.sdi.<your-domain.ltd>` : Tileserver-GL home page and styles description 
-* `sdi.<your-domain.ltd>` : GeoNetwork Opensource
-* `sdi.<your-domain.ltd>/geoserver` : Geoserver
-* `sdi.<your-domain.ltd>/maps` : Mastore Web GIS application
-* `sdi.<your-domain.ltd>/notebooks` : JupyterLab notebooks application
-* `sdi.<your-domain.ltd>/pgadmin` : pgAdmin4
-* `sdi.<your-domain.ltd>/ghc_web` : GeoHealthCheck
-* `sdi.<your-domain.ltd>/kibana` : Kibana monitoring tool
-* `sdi.<your-domain.ltd>/grafana` : Grafana
+* `tiles.ensg-sdi.docker` : Tileserver-GL home page and styles description 
+* `ensg-sdi.docker` : GeoNetwork Opensource
+* `ensg-sdi.docker/geoserver` : Geoserver
+* `ensg-sdi.docker/maps` : Mastore 2 Web GIS application
+* `ensg-sdi.docker/notebooks` : JupyterLab notebooks application
+* `ensg-sdi.docker/pgadmin` : pgAdmin4
+* `ensg-sdi.docker/ghc_web` : GeoHealthCheck
+* `ensg-sdi.docker/kibana` : Kibana monitoring tool
 
 #### Preparation :
 * Install very useful tools: `# yum install git nano make htop elinks wget tshark nano tree`
@@ -19,7 +18,7 @@ Docker based composition of a geospatial data infrastructure solution including 
 * Install the [latest version of docker-compose](https://docs.docker.com/compose/install/)
 
 #### Repository clone & application build
-* Clone this repository and go to the `ensg-dockerized sdi` directory.
+* Clone this repository and go to the `ensg_dockerized_sdi` directory.
 * Build the application using `sudo make build && sudo make proxy-up && sudo make wait && sudo make up`
 
 #### Basic administration commands
@@ -34,4 +33,4 @@ Docker based composition of a geospatial data infrastructure solution including 
 * `make reset` ->  Soft reboot of the whole SDI
 * `make update` ->  Update the whole stack
 * `make hard-reset` ->  All configuration except data and databases is deleted, then rebuilt
-* `make disaster-recovery` -> Saves volumes to ../YYYYMMdd_SDI_Voumes then erases all containers and persistent volumes involved in the SDI, ultimately recreating a fresh one
+* `make disaster-recovery` -> Saves volumes to ../YYYYMMdd_SDI_Volumes then erases all containers and persistent volumes involved in the SDI, ultimately recreating a fresh one

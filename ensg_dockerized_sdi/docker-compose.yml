@@ -1,9 +1,11 @@
 version: '3'
 
 services:
+  #
+  # Software stack entrypoint
   nginx-proxy:
     build: ./nginx-proxy
-    container_name: changeme
+    container_name: ${COMPOSE_PROJECT_NAME}_entrypoint
     restart: unless-stopped
     ports:
       - 80:80
@@ -13,34 +15,113 @@ services:
       - html:/usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
-      - revproxy_admin
-      - revproxy_apps
+      - ${ADMIN_NETWORK}
+      - ${APPS_NETWORK}
 
+  # Entrypoint sidecar - Portainer docker manager
   portainer:
-    image: portainer/portainer-ce:2.0.1-alpine
-    container_name: changeme
+    image: portainer/portainer-ce:latest
+    container_name: portainer4${COMPOSE_PROJECT_NAME}
     restart: always
+    depends_on: 
+      - nginx-proxy
     expose:
       - "9000"
     environment:
-      - VIRTUAL_HOST=changeme
+      - VIRTUAL_HOST=${PORTAINER_VHOST}
       - VIRTUAL_PORT=9000
-    networks:
-      - revproxy_admin
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/portainer/data:/data
     networks:
-      - revproxy_admin
+      - ${ADMIN_NETWORK}
+  
+  #
+  # Applications
+  # Client application : MapStore2
+  mapstore2:
+    image: geosolutionsit/mapstore2:latest
+    container_name: mapstore4${COMPOSE_PROJECT_NAME}
+    restart: unless-stopped
+    depends_on: 
+      - nginx-proxy 
+      - geoserver
+    expose: 
+      - "8080"
+    networks:
+      - ${APPS_NETWORK}
+
+  #
+  # Servers
+  geoserver:
+    image: ${COMPOSE_PROJECT_NAME}_geoserver:${GS_VERSION}
+    container_name: geoserver4${COMPOSE_PROJECT_NAME}
+    restart: unless-stopped
+    expose:
+      - "8080" 
+    build:
+      context: ./geoserver
+    depends_on: 
+      - nginx-proxy
+      - postgis
+      - pgadmin
+    volumes:
+      - geoserver-data:/var/local/geoserver
+      - geoserver-exts:/var/local/geoserver-exts   
+    networks:
+      - ${APPS_NETWORK}
+
+  #
+  # Utilities
+  # pgAdmin & PostGIS
+  pgadmin:
+    image: ${COMPOSE_PROJECT_NAME}_pgadmin4:latest
+    container_name: pgadmin4${COMPOSE_PROJECT_NAME}
+    restart: unless-stopped
+    expose:
+      - "80" 
+    depends_on: 
+      - nginx-proxy
+      - postgis
+    build:
+      context: ./pgadmin
+    env_file:
+      - ./pgadmin/.env
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - ${APPS_NETWORK}
+
+  postgis:
+    image: ${COMPOSE_PROJECT_NAME}_postgis:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_postgis
+    restart: unless-stopped
+    expose:
+      - "5432" 
+    build:
+      context: ./postgis
+    stdin_open: true
+    env_file: 
+      - ./postgis/.env
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - dbbackups:/pg_backups
+    networks:
+      - ${APPS_NETWORK}
 
 volumes:
   vhost.d:
   html:
+  geoserver-exts:
+  geoserver-data:
+  dbdata:
+  dbbackups:
+  pgadmin_data:
 
 networks:
   revproxy_admin:
     external:
-      name: revproxy_admin
+      name: ${ADMIN_NETWORK}
   revproxy_apps:
     external: 
-      name: revproxy_apps
+      name: ${APPS_NETWORK}

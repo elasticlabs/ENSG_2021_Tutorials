@@ -24,8 +24,6 @@ help:
 	@echo "  make logs                   # Follows whole SDI logs (Geoserver, Geonetwork, PostGIS, Client app)"
 	@echo "  make down                   # Brings the SDI down. "
 	@echo "  make cleanup                # Complete hard cleanup of images, containers, networks, volumes & data of the SDI"
-	@echo "  make create-gn-indexes      # Configure geonetwork elasticsearch indexes"
-	@echo "  make delete-gn-indexes      # Delete configured geonetwork elasticsearch indexes"
 	@echo "  make reset                  # Soft reboot of the whole SDI"
 	@echo "  make update                 # Update the whole stack"
 	@echo "  make hard-reset             # All configuration except data and databases is deleted, then rebuilt"
@@ -34,28 +32,24 @@ help:
 
 .PHONY: proxy-up
 proxy-up:
-	chmod 755 proxy-toolkit/uploadsize.conf
+	chmod 755 nginx-proxy/*.conf
 	docker-compose -f docker-compose.proxy.yml up -d --build --remove-orphans portainer 
 
 .PHONY: up
-up:
-	docker-compose up -d --remove-orphans geonetwork
+up: pull build proxy-up
 	docker-compose up -d --remove-orphans geoserver
-	docker-compose up -d --remove-orphans es01
+	docker-compose up -d --remove-orphans mapstore2
+	docker system prune -a
 
 .PHONY: build
-build:
-	# Geonetwork build
-	chmod 755 geonetwork/conf/*
-	docker-compose -f docker-compose.yml build geonetwork
-	# Geoserver build
+build: pull
+	# Builds the complete stack
 	chmod 755 geoserver/conf/*
-	docker-compose -f docker-compose.yml build geoserver
+	docker-compose -f docker-compose.yml build  --no-cache
 
 .PHONY: pull
 pull: 
 	docker-compose -f docker-compose.yml pull
-	docker-compose -f docker-compose.proxy.yml pull
 
 .PHONY: logs
 logs:
@@ -64,25 +58,6 @@ logs:
 .PHONY: down
 down:
 	docker-compose down --remove-orphans
-
-.PHONY: create-gn-indexes
-create-gn-indexes:
-	# From https://github.com/geonetwork/core-geonetwork/tree/3.10.x/es
-	# And https://geonetwork-opensource.org/manuals/trunk/en/maintainer-guide/statistics/setup-elasticsearch.html
-	curl -O https://raw.githubusercontent.com/geonetwork/core-geonetwork/3.10.x/es/config/features.json
-	curl -O https://raw.githubusercontent.com/geonetwork/core-geonetwork/3.10.x/es/config/records.json
-	curl -O https://raw.githubusercontent.com/geonetwork/core-geonetwork/3.10.x/es/config/searchlogs.json
-	#
-	# Indexes deployment :
-	curl -X PUT http://$(ES_HOST)/gn-features -H 'Content-Type: application/json' -d @features.json && rm features.json
-	curl -X PUT http://$(ES_HOST)/gn-records -H 'Content-Type: application/json' -d @records.json && rm records.json
-	curl -X PUT http://$(ES_HOST)/gn-searchlogs -H 'Content-Type: application/json' -d @searchlogs.json && rm searchlogs.json
-
-.PHONY: delete-gn-indexes
-delete-gn-indexes:
-	curl -X DELETE http://$(ES_HOST)/gn-records
-	curl -X DELETE http://$(ES_HOST)/gn-features
-	curl -X DELETE http://$(ES_HOST)/gn-searchlogs
 
 .PHONY: cleanup
 cleanup:
@@ -95,7 +70,6 @@ cleanup:
 .PHONY: cleanup-volumes
 cleanup-volumes:
 	# Delete all hosted persistent data available in volumes
-	docker volume rm -f $(DC_PROJECT)_geonetwork-base
 	docker volume rm -f $(DC_PROJECT)_geoserver-exts
 	docker volume rm -f $(DC_PROJECT)_geoserver-data
 	# Remove all dangling docker volumes
